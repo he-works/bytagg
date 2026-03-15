@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 
 export async function POST(req: NextRequest) {
   if (!(await isAuthenticated())) {
@@ -27,17 +26,12 @@ export async function POST(req: NextRequest) {
 
   // 고유한 파일명 생성
   const ext = file.name.split(".").pop() || "jpg";
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const fileName = `photos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  // uploads 디렉토리에 저장
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
+  // Vercel Blob Storage에 업로드
+  const blob = await put(fileName, file, {
+    access: "public",
+  });
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadDir, fileName), buffer);
-
-  // 브라우저에서 접근 가능한 URL 반환
-  const photoUrl = `/uploads/${fileName}`;
-
-  return NextResponse.json({ url: photoUrl });
+  return NextResponse.json({ url: blob.url });
 }
