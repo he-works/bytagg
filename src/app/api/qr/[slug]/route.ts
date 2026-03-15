@@ -33,7 +33,7 @@ export async function GET(req: NextRequest, { params }: Props) {
     },
   });
 
-  return new NextResponse(qrBuffer, {
+  return new NextResponse(new Uint8Array(qrBuffer), {
     headers: {
       "Content-Type": "image/png",
       "Cache-Control": "public, max-age=86400",
