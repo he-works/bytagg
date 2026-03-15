@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 관리자 계정
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+// 명함 데이터
+model Card {
+  id          Int        @id @default(autoincrement())
+  slug        String     @unique
+  name        String
+  nameEn      String?
+  title       String?
+  company     String?
+  phone       String?
+  email       String?
+  photo       String?
+  bio         String?
+  template    String     @default("default")
+  theme       String     @default("light")
+  accentColor String     @default("#0066FF")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  links       CardLink[]
+  views       CardView[]
+}
+
+// SNS 링크
+model CardLink {
+  id        Int    @id @default(autoincrement())
+  cardId    Int
+  platform  String
+  url       String
+  sortOrder Int    @default(0)
+  card      Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+// 조회수 통계
+model CardView {
+  id        Int      @id @default(autoincrement())
+  cardId    Int
+  viewedAt  DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
