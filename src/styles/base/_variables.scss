@@ -1,0 +1,60 @@
+// ============================================
+// 변수 (Variables)
+// 색상, 폰트, 크기 등 공통 변수를 여기서 관리
+// ============================================
+
+// --- 색상 ---
+$color-primary: #0066FF;
+$color-primary-hover: #0052cc;
+$color-danger: #ef4444;
+$color-danger-hover: #dc2626;
+$color-success: #22c55e;
+
+$color-text: #171717;
+$color-text-light: #6b7280;
+$color-text-muted: #9ca3af;
+
+$color-bg: #ffffff;
+$color-bg-gray: #f9fafb;
+$color-bg-dark: #0a0a0a;
+
+$color-border: #d1d5db;
+$color-border-light: #e5e7eb;
+
+// --- 폰트 ---
+$font-family-base: "Arial", "Helvetica", sans-serif;
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+
+// --- 간격 ---
+$spacing-1: 0.25rem;  // 4px
+$spacing-2: 0.5rem;   // 8px
+$spacing-3: 0.75rem;  // 12px
+$spacing-4: 1rem;     // 16px
+$spacing-6: 1.5rem;   // 24px
+$spacing-8: 2rem;     // 32px
+
+// --- 둥근 모서리 ---
+$radius-sm: 0.375rem;  // 6px
+$radius-md: 0.5rem;    // 8px
+$radius-lg: 0.75rem;   // 12px
+$radius-xl: 1rem;      // 16px
+$radius-2xl: 1.5rem;   // 24px
+$radius-full: 9999px;
+
+// --- 그림자 ---
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+// --- 반응형 브레이크포인트 ---
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;

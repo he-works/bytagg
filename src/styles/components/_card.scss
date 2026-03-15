@@ -1,0 +1,65 @@
+// ============================================
+// 명함 카드 스타일 (DefaultCard.tsx)
+// 사용자에게 보이는 명함 페이지 디자인
+// ============================================
+
+// 명함 카드 전체 컨테이너 (배경)
+.card-page {
+  // 예: background: #f0f0f0;
+}
+
+// 카드 본체 (흰색 박스)
+.card-body {
+  // 예: border-radius: 20px;
+  // 예: max-width: 420px;
+}
+
+// 상단 컬러 바
+.card-accent-bar {
+  // 예: height: 4px;
+}
+
+// 프로필 사진 영역
+.card-photo {
+  // 예: width: 120px; height: 120px;
+}
+
+// 프로필 이니셜 (사진 없을 때)
+.card-initial {
+  // 예: font-size: 2rem;
+}
+
+// 이름
+.card-name {
+  // 예: font-size: 1.8rem;
+}
+
+// 영문 이름
+.card-name-en {
+  // 예: color: #888;
+}
+
+// 직함·회사
+.card-title {
+  // 예: font-size: 1rem;
+}
+
+// 소개글
+.card-bio {
+  // 예: line-height: 1.6;
+}
+
+// 연락처 (전화, 이메일) 버튼
+.card-contact {
+  // 예: padding: 12px;
+}
+
+// SNS 링크 버튼
+.card-sns-link {
+  // 예: border-radius: 20px;
+}
+
+// 연락처 저장 버튼
+.card-save-btn {
+  // 예: padding: 14px;
+}

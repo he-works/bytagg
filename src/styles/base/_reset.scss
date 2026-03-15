@@ -1,0 +1,16 @@
+// ============================================
+// 리셋 & 기본 스타일 (Reset & Base)
+// body, a, button 등 HTML 기본 요소 스타일
+// ============================================
+@use "variables" as *;
+
+body {
+  font-family: $font-family-base;
+  color: $color-text;
+  background: $color-bg;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
