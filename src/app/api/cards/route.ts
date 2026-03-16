@@ -9,7 +9,7 @@ export async function GET() {
   }
 
   const cards = await prisma.card.findMany({
-    include: { links: true, _count: { select: { views: true } } },
+    include: { links: true, images: { orderBy: { sortOrder: "asc" } }, _count: { select: { views: true } } },
     orderBy: { createdAt: "desc" },
   });
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   const data = await req.json();
-  const { links, ...cardData } = data;
+  const { links, images, ...cardData } = data;
 
   const card = await prisma.card.create({
     data: {
@@ -31,8 +31,11 @@ export async function POST(req: NextRequest) {
       links: links?.length
         ? { create: links.map((l: { platform: string; url: string }, i: number) => ({ ...l, sortOrder: i })) }
         : undefined,
+      images: images?.length
+        ? { create: images.map((img: { url: string; sortOrder: number }) => ({ url: img.url, sortOrder: img.sortOrder })) }
+        : undefined,
     },
-    include: { links: true },
+    include: { links: true, images: { orderBy: { sortOrder: "asc" } } },
   });
 
   return NextResponse.json(card, { status: 201 });

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db";
 import DefaultCard from "@/components/card/DefaultCard";
+import ImageCard from "@/components/card/ImageCard";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -13,7 +14,10 @@ export default async function CardPage({ params }: Props) {
 
   const card = await prisma.card.findUnique({
     where: { slug: decodedSlug, isActive: true },
-    include: { links: true },
+    include: {
+      links: { orderBy: { sortOrder: "asc" } },
+      images: { orderBy: { sortOrder: "asc" } },
+    },
   });
 
   if (!card) {
@@ -33,6 +37,10 @@ export default async function CardPage({ params }: Props) {
     },
   });
 
+  // 템플릿에 따라 다른 컴포넌트 렌더링
+  if (card.template === "image" && card.images.length > 0) {
+    return <ImageCard card={card} />;
+  }
   return <DefaultCard card={card} />;
 }
 

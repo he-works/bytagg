@@ -3,12 +3,13 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import DefaultCard from "@/components/card/DefaultCard";
-import type { Card, CardLink } from "@prisma/client";
+import ImageCard from "@/components/card/ImageCard";
+import type { Card, CardLink, CardImage } from "@prisma/client";
 
 type LinkInput = { platform: string; url: string };
 
 type CardFormProps = {
-  initialData?: Card & { links: CardLink[] };
+  initialData?: Card & { links: CardLink[]; images?: CardImage[] };
 };
 
 const PLATFORMS = [
@@ -31,6 +32,9 @@ export default function CardForm({ initialData }: CardFormProps) {
   const router = useRouter();
   const isEditing = !!initialData;
 
+  // template: 기존 "default" 값을 "text"로 변환
+  const initialTemplate = initialData?.template === "default" ? "text" : (initialData?.template || "text");
+
   const [form, setForm] = useState({
     slug: initialData?.slug || "",
     name: initialData?.name || "",
@@ -40,6 +44,7 @@ export default function CardForm({ initialData }: CardFormProps) {
     phone: initialData?.phone || "",
     email: initialData?.email || "",
     bio: initialData?.bio || "",
+    template: initialTemplate,
     accentColor: initialData?.accentColor || "#0066FF",
     isActive: initialData?.isActive ?? true,
   });
@@ -47,6 +52,13 @@ export default function CardForm({ initialData }: CardFormProps) {
   const [photo, setPhoto] = useState<string | null>(initialData?.photo || null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 갤러리 이미지 (이미지형 명함용)
+  const [galleryImages, setGalleryImages] = useState<{ url: string; sortOrder: number }[]>(
+    initialData?.images?.map((img) => ({ url: img.url, sortOrder: img.sortOrder })) || []
+  );
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [links, setLinks] = useState<LinkInput[]>(
     initialData?.links?.map((l) => ({ platform: l.platform, url: l.url })) || []
@@ -115,6 +127,86 @@ export default function CardForm({ initialData }: CardFormProps) {
     setUploading(false);
   }
 
+  // 갤러리 이미지 업로드 (다중 파일 지원)
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const remaining = 5 - galleryImages.length;
+    if (remaining <= 0) {
+      setError("갤러리 이미지는 최대 5장까지 가능합니다");
+      return;
+    }
+
+    // 선택한 파일 수가 남은 슬롯보다 많으면 경고
+    const filesToUpload = Array.from(files).slice(0, remaining);
+    if (files.length > remaining) {
+      setError(`남은 슬롯이 ${remaining}장이므로 ${filesToUpload.length}장만 업로드합니다`);
+    } else {
+      setError("");
+    }
+
+    setGalleryUploading(true);
+
+    for (const file of filesToUpload) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/upload?type=gallery", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setGalleryImages((prev) => [...prev, { url: data.url, sortOrder: prev.length }]);
+        } else {
+          const data = await res.json();
+          setError(data.error || `"${file.name}" 업로드에 실패했습니다`);
+        }
+      } catch {
+        setError(`"${file.name}" 업로드 중 오류가 발생했습니다`);
+      }
+    }
+
+    setGalleryUploading(false);
+    // 같은 파일 재업로드 허용
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
+  }
+
+  function removeGalleryImage(index: number) {
+    setGalleryImages((prev) =>
+      prev.filter((_, i) => i !== index).map((img, i) => ({ ...img, sortOrder: i }))
+    );
+  }
+
+  // 드래그 앤 드롭으로 갤러리 이미지 순서 변경
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  function handleDragStart(index: number) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    setDragOverIndex(index);
+  }
+
+  function handleDragEnd() {
+    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      setGalleryImages((prev) => {
+        const updated = [...prev];
+        const [dragged] = updated.splice(dragIndex, 1);
+        updated.splice(dragOverIndex, 0, dragged);
+        return updated.map((img, i) => ({ ...img, sortOrder: i }));
+      });
+    }
+    setDragIndex(null);
+    setDragOverIndex(null);
+  }
+
   function addLink() {
     setLinks([...links, { platform: "website", url: PLATFORM_PREFIXES["website"] }]);
   }
@@ -156,7 +248,7 @@ export default function CardForm({ initialData }: CardFormProps) {
     email: form.email || null,
     photo: photo,
     bio: form.bio || null,
-    template: "default",
+    template: form.template,
     theme: "light",
     accentColor: form.accentColor,
     isActive: true,
@@ -165,6 +257,7 @@ export default function CardForm({ initialData }: CardFormProps) {
     links: links
       .filter((l) => l.url)
       .map((l, i) => ({ id: i, cardId: 0, platform: l.platform, url: l.url, sortOrder: i })),
+    images: galleryImages.map((img, i) => ({ id: i, cardId: 0, url: img.url, sortOrder: img.sortOrder })),
   };
 
   function handleReset() {
@@ -177,12 +270,16 @@ export default function CardForm({ initialData }: CardFormProps) {
       phone: initialData?.phone || "",
       email: initialData?.email || "",
       bio: initialData?.bio || "",
+      template: initialTemplate,
       accentColor: initialData?.accentColor || "#0066FF",
       isActive: initialData?.isActive ?? true,
     });
     setPhoto(initialData?.photo || null);
     setLinks(
       initialData?.links?.map((l) => ({ platform: l.platform, url: l.url })) || []
+    );
+    setGalleryImages(
+      initialData?.images?.map((img) => ({ url: img.url, sortOrder: img.sortOrder })) || []
     );
     setSlugManuallyEdited(!!initialData?.slug);
     setError("");
@@ -203,6 +300,7 @@ export default function CardForm({ initialData }: CardFormProps) {
       bio: form.bio || null,
       photo: photo,
       links: links.filter((l) => l.url),
+      images: galleryImages,
     };
 
     const url = isEditing ? `/api/cards/${initialData.id}` : "/api/cards";
@@ -240,6 +338,109 @@ export default function CardForm({ initialData }: CardFormProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* 입력 폼 */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* 템플릿 선택 */}
+          <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+            <h2 className="font-bold text-lg">명함 타입</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => updateField("template", "text")}
+                className={`p-4 rounded-xl border-2 text-center transition-all ${
+                  form.template === "text"
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                }`}
+              >
+                <div className="text-2xl mb-2">📝</div>
+                <div className="font-medium">텍스트형</div>
+                <div className="text-xs mt-1 text-gray-500">프로필 사진 + 텍스트 중심</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField("template", "image")}
+                className={`p-4 rounded-xl border-2 text-center transition-all ${
+                  form.template === "image"
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+                }`}
+              >
+                <div className="text-2xl mb-2">🖼️</div>
+                <div className="font-medium">이미지형</div>
+                <div className="text-xs mt-1 text-gray-500">대형 사진 캐러셀 + 오버레이</div>
+              </button>
+            </div>
+          </div>
+
+          {/* 갤러리 이미지 (이미지형 선택 시만 표시) */}
+          {form.template === "image" && (
+            <div className="bg-white rounded-2xl shadow p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-lg">갤러리 이미지</h2>
+                <span className="text-sm text-gray-500">{galleryImages.length}/5장</span>
+              </div>
+              <p className="text-xs text-gray-400">최대 5장, 각 2MB 이하. 큰 사진을 올려주세요.</p>
+
+              {/* 업로드된 이미지 미리보기 (드래그로 순서 변경 가능) */}
+              {galleryImages.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-2">이미지를 드래그하여 순서를 변경할 수 있습니다</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {galleryImages.map((img, i) => (
+                      <div
+                        key={`${img.url}-${i}`}
+                        draggable
+                        onDragStart={() => handleDragStart(i)}
+                        onDragOver={(e) => handleDragOver(e, i)}
+                        onDragEnd={handleDragEnd}
+                        className={`relative group cursor-grab active:cursor-grabbing transition-all ${
+                          dragIndex === i ? "opacity-40 scale-95" : ""
+                        } ${dragOverIndex === i && dragIndex !== i ? "ring-2 ring-blue-400 ring-offset-2 rounded-lg" : ""}`}
+                      >
+                        <img
+                          src={img.url}
+                          alt={`갤러리 ${i + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border border-gray-200 pointer-events-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeGalleryImage(i)}
+                          className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          ✕
+                        </button>
+                        <span className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                          {i + 1}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 이미지 추가 버튼 */}
+              {galleryImages.length < 5 && (
+                <div>
+                  <input
+                    ref={galleryInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleGalleryUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => galleryInputRef.current?.click()}
+                    disabled={galleryUploading}
+                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors disabled:opacity-50"
+                  >
+                    {galleryUploading ? "업로드 중..." : "+ 이미지 추가"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 기본 정보 (이름, 연락처 등) */}
           <div className="bg-white rounded-2xl shadow p-6 space-y-4">
             <h2 className="font-bold text-lg">기본 정보</h2>
@@ -496,7 +697,11 @@ export default function CardForm({ initialData }: CardFormProps) {
         <div className="hidden lg:block">
           <h2 className="font-bold text-lg mb-4">미리보기</h2>
           <div className="sticky top-6 transform scale-[0.85] origin-top">
-            <DefaultCard card={previewCard} />
+            {form.template === "image" && galleryImages.length > 0 ? (
+              <ImageCard card={previewCard} />
+            ) : (
+              <DefaultCard card={previewCard} />
+            )}
           </div>
         </div>
       </div>

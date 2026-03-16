@@ -12,20 +12,26 @@ export async function PUT(req: NextRequest, { params }: Props) {
 
   const { id } = await params;
   const data = await req.json();
-  const { links, ...cardData } = data;
+  const { links, images, ...cardData } = data;
 
-  // 기존 링크 삭제 후 새로 생성
-  await prisma.cardLink.deleteMany({ where: { cardId: parseInt(id) } });
+  const cardId = parseInt(id);
+
+  // 기존 링크 & 이미지 삭제 후 새로 생성
+  await prisma.cardLink.deleteMany({ where: { cardId } });
+  await prisma.cardImage.deleteMany({ where: { cardId } });
 
   const card = await prisma.card.update({
-    where: { id: parseInt(id) },
+    where: { id: cardId },
     data: {
       ...cardData,
       links: links?.length
         ? { create: links.map((l: { platform: string; url: string }, i: number) => ({ ...l, sortOrder: i })) }
         : undefined,
+      images: images?.length
+        ? { create: images.map((img: { url: string; sortOrder: number }) => ({ url: img.url, sortOrder: img.sortOrder })) }
+        : undefined,
     },
-    include: { links: true },
+    include: { links: true, images: { orderBy: { sortOrder: "asc" } } },
   });
 
   return NextResponse.json(card);
@@ -52,7 +58,7 @@ export async function GET(_req: NextRequest, { params }: Props) {
   const { id } = await params;
   const card = await prisma.card.findUnique({
     where: { id: parseInt(id) },
-    include: { links: true },
+    include: { links: true, images: { orderBy: { sortOrder: "asc" } } },
   });
 
   if (!card) {

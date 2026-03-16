@@ -63,3 +63,31 @@
 .card-save-btn {
   // 예: padding: 14px;
 }
+
+// ============================================
+// 이미지형 명함 카드 스타일 (ImageCard.tsx)
+// ============================================
+
+// 이미지형 카드 전체 컨테이너
+.image-card-page {
+  // 예: background: #000;
+}
+
+// 캐러셀 컨테이너 — 스크롤바 숨김
+.image-card-carousel {
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 그라데이션 오버레이
+.image-card-overlay {
+  // 예: background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+// 슬라이드 인디케이터 점
+.image-card-indicator {
+  // 예: width: 8px; height: 8px;
+}

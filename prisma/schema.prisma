@@ -28,7 +28,7 @@ model Card {
   email       String?
   photo       String?
   bio         String?
-  template    String     @default("default")
+  template    String     @default("text")
   theme       String     @default("light")
   accentColor String     @default("#0066FF")
   isActive    Boolean    @default(true)
@@ -36,6 +36,16 @@ model Card {
   updatedAt   DateTime   @updatedAt
   links       CardLink[]
   views       CardView[]
+  images      CardImage[]
+}
+
+// 갤러리 이미지 (이미지형 명함용)
+model CardImage {
+  id        Int    @id @default(autoincrement())
+  cardId    Int
+  url       String
+  sortOrder Int    @default(0)
+  card      Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }
 
 // SNS 링크
