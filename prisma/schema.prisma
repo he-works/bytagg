@@ -23,8 +23,11 @@ model Card {
   name        String
   nameEn      String?
   title       String?
+  titleEn     String?
   company     String?
+  companyEn   String?
   phone       String?
+  countryCode String     @default("+82")
   email       String?
   photo       String?
   bio         String?

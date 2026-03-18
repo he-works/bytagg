@@ -17,6 +17,17 @@ export async function GET(_req: NextRequest, { params }: Props) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // 전화번호에 국제번호 붙이기 (하이픈 제거 후 국제 형식으로)
+  let telValue = "";
+  if (card.phone) {
+    const digits = card.phone.replace(/[^0-9]/g, "");
+    // 0으로 시작하면 0 제거 후 국제번호 붙이기
+    const international = digits.startsWith("0")
+      ? card.countryCode + digits.slice(1)
+      : card.countryCode + digits;
+    telValue = international;
+  }
+
   const vcard = [
     "BEGIN:VCARD",
     "VERSION:3.0",
@@ -24,7 +35,7 @@ export async function GET(_req: NextRequest, { params }: Props) {
     card.nameEn ? `FN;CHARSET=UTF-8:${card.nameEn}` : "",
     card.company ? `ORG:${card.company}` : "",
     card.title ? `TITLE:${card.title}` : "",
-    card.phone ? `TEL;TYPE=CELL:${card.phone}` : "",
+    telValue ? `TEL;TYPE=CELL:${telValue}` : "",
     card.email ? `EMAIL:${card.email}` : "",
     card.bio ? `NOTE:${card.bio}` : "",
     "END:VCARD",

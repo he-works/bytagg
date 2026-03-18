@@ -17,6 +17,58 @@ const PLATFORMS = [
   "youtube", "facebook", "tiktok",
 ];
 
+// 주요 국제번호 목록
+const COUNTRY_CODES = [
+  { code: "+82", label: "🇰🇷 +82", country: "한국" },
+  { code: "+1", label: "🇺🇸 +1", country: "미국/캐나다" },
+  { code: "+81", label: "🇯🇵 +81", country: "일본" },
+  { code: "+86", label: "🇨🇳 +86", country: "중국" },
+  { code: "+44", label: "🇬🇧 +44", country: "영국" },
+  { code: "+49", label: "🇩🇪 +49", country: "독일" },
+  { code: "+33", label: "🇫🇷 +33", country: "프랑스" },
+  { code: "+61", label: "🇦🇺 +61", country: "호주" },
+  { code: "+65", label: "🇸🇬 +65", country: "싱가포르" },
+  { code: "+852", label: "🇭🇰 +852", country: "홍콩" },
+  { code: "+886", label: "🇹🇼 +886", country: "대만" },
+  { code: "+84", label: "🇻🇳 +84", country: "베트남" },
+  { code: "+66", label: "🇹🇭 +66", country: "태국" },
+  { code: "+62", label: "🇮🇩 +62", country: "인도네시아" },
+  { code: "+91", label: "🇮🇳 +91", country: "인도" },
+];
+
+// 전화번호 자동 하이픈 포맷
+function formatPhoneNumber(value: string): string {
+  // 숫자만 남기기
+  const digits = value.replace(/[^0-9]/g, "");
+
+  // 한국 휴대폰 (010, 011 등)
+  if (digits.startsWith("010") || digits.startsWith("011") || digits.startsWith("016") || digits.startsWith("017") || digits.startsWith("018") || digits.startsWith("019")) {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+  }
+
+  // 한국 지역번호 (02)
+  if (digits.startsWith("02")) {
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+  }
+
+  // 한국 지역번호 (031~064 등 3자리)
+  if (digits.startsWith("0") && digits.length > 2) {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+  }
+
+  // 일반 (외국 번호 등): 4자리씩 끊기
+  if (digits.length <= 4) return digits;
+  if (digits.length <= 8) return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8, 12)}`;
+}
+
 const PLATFORM_PREFIXES: Record<string, string> = {
   website: "https://",
   instagram: "https://instagram.com/",
@@ -40,8 +92,11 @@ export default function CardForm({ initialData }: CardFormProps) {
     name: initialData?.name || "",
     nameEn: initialData?.nameEn || "",
     title: initialData?.title || "",
+    titleEn: initialData?.titleEn || "",
     company: initialData?.company || "",
+    companyEn: initialData?.companyEn || "",
     phone: initialData?.phone || "",
+    countryCode: initialData?.countryCode || "+82",
     email: initialData?.email || "",
     bio: initialData?.bio || "",
     template: initialTemplate,
@@ -96,6 +151,10 @@ export default function CardForm({ initialData }: CardFormProps) {
   function handleSlugChange(value: string) {
     setSlugManuallyEdited(true);
     updateField("slug", value);
+  }
+
+  function handlePhoneChange(value: string) {
+    updateField("phone", formatPhoneNumber(value));
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -243,8 +302,11 @@ export default function CardForm({ initialData }: CardFormProps) {
     name: form.name || "이름",
     nameEn: form.nameEn || null,
     title: form.title || null,
+    titleEn: form.titleEn || null,
     company: form.company || null,
+    companyEn: form.companyEn || null,
     phone: form.phone || null,
+    countryCode: form.countryCode,
     email: form.email || null,
     photo: photo,
     bio: form.bio || null,
@@ -266,8 +328,11 @@ export default function CardForm({ initialData }: CardFormProps) {
       name: initialData?.name || "",
       nameEn: initialData?.nameEn || "",
       title: initialData?.title || "",
+      titleEn: initialData?.titleEn || "",
       company: initialData?.company || "",
+      companyEn: initialData?.companyEn || "",
       phone: initialData?.phone || "",
+      countryCode: initialData?.countryCode || "+82",
       email: initialData?.email || "",
       bio: initialData?.bio || "",
       template: initialTemplate,
@@ -294,8 +359,11 @@ export default function CardForm({ initialData }: CardFormProps) {
       ...form,
       nameEn: form.nameEn || null,
       title: form.title || null,
+      titleEn: form.titleEn || null,
       company: form.company || null,
+      companyEn: form.companyEn || null,
       phone: form.phone || null,
+      countryCode: form.countryCode,
       email: form.email || null,
       bio: form.bio || null,
       photo: photo,
@@ -423,7 +491,7 @@ export default function CardForm({ initialData }: CardFormProps) {
                   <input
                     ref={galleryInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
                     multiple
                     onChange={handleGalleryUpload}
                     className="hidden"
@@ -475,7 +543,7 @@ export default function CardForm({ initialData }: CardFormProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">직함</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">직함 (국문)</label>
                 <input
                   type="text"
                   value={form.title}
@@ -485,7 +553,20 @@ export default function CardForm({ initialData }: CardFormProps) {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">회사</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">직함 (영문)</label>
+                <input
+                  type="text"
+                  value={form.titleEn}
+                  onChange={(e) => updateField("titleEn", e.target.value)}
+                  placeholder="Software Engineer"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">회사 (국문)</label>
                 <input
                   type="text"
                   value={form.company}
@@ -494,18 +575,42 @@ export default function CardForm({ initialData }: CardFormProps) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">회사 (영문)</label>
+                <input
+                  type="text"
+                  value={form.companyEn}
+                  onChange={(e) => updateField("companyEn", e.target.value)}
+                  placeholder="Tech Company"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">연락처</label>
-                <input
-                  type="tel"
-                  value={form.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
-                  placeholder="010-1234-5678"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={form.countryCode}
+                    onChange={(e) => updateField("countryCode", e.target.value)}
+                    className="px-2 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ minWidth: "100px" }}
+                  >
+                    {COUNTRY_CODES.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="010-1234-5678"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
@@ -578,7 +683,7 @@ export default function CardForm({ initialData }: CardFormProps) {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml"
                     onChange={handlePhotoUpload}
                     className="hidden"
                   />
@@ -679,7 +784,7 @@ export default function CardForm({ initialData }: CardFormProps) {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex-1 bg-color-primary text-white py-3 rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {saving ? "저장 중..." : isEditing ? "수정 저장" : "명함 생성"}
             </button>

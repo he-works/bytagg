@@ -56,7 +56,7 @@ export default function AdminCardsPage() {
         <div className="flex gap-3">
           <Link
             href="/admin/cards/new"
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            className="bg-color-primary text-white px-5 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
             + 새 명함
           </Link>

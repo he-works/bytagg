@@ -1,93 +1,453 @@
 // ============================================
-// 명함 카드 스타일 (DefaultCard.tsx)
-// 사용자에게 보이는 명함 페이지 디자인
+// 명함 카드 스타일
+// DefaultCard.tsx / ImageCard.tsx / ShareButton.tsx
+// 색상 → var(--...) 으로 참조 (_variables.scss :root 에서 관리)
+// 크기/간격 → $scss변수 로 참조 (_variables.scss 에서 관리)
+// ============================================
+@use "../base/variables" as *;
+
+
+// ============================================
+// 공통 (DefaultCard + ImageCard 공유)
 // ============================================
 
-// 명함 카드 전체 컨테이너 (배경)
-.card-page {
-  // 예: background: #f0f0f0;
-}
-
-// 카드 본체 (흰색 박스)
-.card-body {
-  // 예: border-radius: 20px;
-  // 예: max-width: 420px;
-}
-
-// 상단 컬러 바
-.card-accent-bar {
-  // 예: height: 4px;
-}
-
-// 프로필 사진 영역
-.card-photo {
-  // 예: width: 120px; height: 120px;
-}
-
-// 프로필 이니셜 (사진 없을 때)
-.card-initial {
-  // 예: font-size: 2rem;
-}
-
-// 이름
-.card-name {
-  // 예: font-size: 1.8rem;
-}
-
-// 영문 이름
-.card-name-en {
-  // 예: color: #888;
-}
-
-// 직함·회사
-.card-title {
-  // 예: font-size: 1rem;
-}
-
-// 소개글
-.card-bio {
-  // 예: line-height: 1.6;
-}
-
-// 연락처 (전화, 이메일) 버튼
+// 연락처 (전화, 이메일) 행
 .card-contact {
-  // 예: padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  border-radius: $card-contact-radius;
+  background: var(--card-contact-bg);
+  transition: background 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--card-contact-bg-hover);
+  }
+
+  .card-contact-icon {
+    font-size: $font-size-lg;
+    flex-shrink: 0;
+  }
+
+  .card-contact-text {
+    color: var(--card-color-contact-text);
+    font-size: $font-size-base;
+  }
+}
+
+// 연락처 목록 래퍼
+.card-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+// SNS 링크 영역
+.card-sns-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-md;
+  padding-top: $spacing-sm;
 }
 
 // SNS 링크 버튼
 .card-sns-link {
-  // 예: border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $card-sns-radius;
+  background: var(--card-sns-bg);
+  color: var(--card-sns-color);
+  font-size: $font-size-sm;
+  transition: background 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    background: var(--card-sns-bg-hover);
+  }
+
+  .card-sns-name {
+    text-transform: capitalize;
+  }
 }
 
 // 연락처 저장 버튼
 .card-save-btn {
-  // 예: padding: 14px;
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: $card-btn-padding-y 0;
+  border-radius: $card-btn-radius;
+  color: var(--color-white);
+  font-weight: 500;
+  transition: opacity 0.2s;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
-// ============================================
-// 이미지형 명함 카드 스타일 (ImageCard.tsx)
-// ============================================
-
-// 이미지형 카드 전체 컨테이너
-.image-card-page {
-  // 예: background: #000;
+// 공유 버튼 영역 (ShareButton.tsx)
+.card-share {
+  display: flex;
+  gap: $spacing-md;
 }
 
-// 캐러셀 컨테이너 — 스크롤바 숨김
-.image-card-carousel {
+.card-share-copy,
+.card-share-native {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $card-btn-padding-y 0;
+  border-radius: $card-btn-radius;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  font-size: $font-size-base;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.card-share-copy {
+  border: 2px solid;
+  background: transparent;
+}
+
+.card-share-native {
+  color: var(--color-white);
+}
+
+// 하단 액션 영역 (저장 + 공유 묶음)
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+
+// ============================================
+// DefaultCard (텍스트형 명함)
+// ============================================
+
+// 페이지 배경
+.card-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg-page);
+  padding: $spacing-lg;
+}
+
+// 카드 본체
+.card-body {
+  width: 100%;
+  max-width: $card-max-width;
+  background: var(--card-bg-body);
+  border-radius: $card-body-radius;
+  box-shadow: $card-body-shadow;
+  overflow: hidden;
+}
+
+// 상단 컬러 바
+.card-accent-bar {
+  height: 6px;
+}
+
+// 프로필 영역 (사진 + 이름 + 직함 + 소개)
+.card-profile {
+  padding: $card-padding-x;
+  padding-top: $card-padding-x;
+  padding-bottom: $spacing-xxl;
+  text-align: center;
+}
+
+// 프로필 사진
+.card-photo {
+  width: $card-photo-size;
+  height: $card-photo-size;
+  border-radius: $radius-full;
+  margin: 0 auto $spacing-lg;
+  object-fit: cover;
+  border: $card-photo-border;
+  box-shadow: $card-photo-shadow;
+  display: block;
+}
+
+// 이니셜 (사진 없을 때)
+.card-initial {
+  width: $card-photo-size;
+  height: $card-photo-size;
+  border-radius: $radius-full;
+  margin: 0 auto $spacing-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  font-size: $font-size-3xl;
+  font-weight: 700;
+  box-shadow: $card-photo-shadow;
+}
+
+// 이름
+.card-name {
+  font-size: $font-size-xxl;
+  font-weight: 700;
+  color: var(--card-color-name);
+  margin: 0;
+}
+
+// 영문 이름
+.card-name-en {
+  font-size: $font-size-sm;
+  color: var(--card-color-name-en);
+  margin-top: 2px;
+}
+
+// 직함 / 회사
+.card-title {
+  color: var(--card-color-title);
+  margin-top: $spacing-sm;
+}
+
+// 영문 직함 / 회사
+.card-title-en {
+  color: var(--card-color-name-en);
+  font-size: $font-size-sm;
+  margin-top: 2px;
+}
+
+// 소개글
+.card-bio {
+  color: var(--card-color-bio);
+  font-size: $font-size-sm;
+  margin-top: $spacing-md;
+  line-height: 1.6;
+}
+
+// 섹션 래퍼 (카드 내부 패딩 통일)
+.card-section {
+  padding: 0 $card-padding-x;
+  margin-bottom: $spacing-lg;
+}
+
+.card-section--sns {
+  padding: 0 $card-padding-x;
+  margin-bottom: $spacing-xxl;
+}
+
+.card-section--actions {
+  padding: 0 $card-padding-x;
+  margin-bottom: $card-padding-x;
+}
+
+
+// ============================================
+// ImageCard (이미지형 명함)
+// ============================================
+
+// 페이지 배경
+.imgcard-page {
+  min-height: 100vh;
+  background: var(--card-bg-page);
+}
+
+// 카드 본체
+.imgcard-body {
+  width: 100%;
+  max-width: $card-max-width;
+  margin: 0 auto;
+  background: var(--card-bg-body);
+  min-height: 100vh;
+  box-shadow: $card-body-shadow;
+}
+
+// 캐러셀 래퍼
+.imgcard-hero {
+  position: relative;
+}
+
+// 캐러셀 스크롤 컨테이너
+.imgcard-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-// 그라데이션 오버레이
-.image-card-overlay {
-  // 예: background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+// 캐러셀 개별 슬라이드
+.imgcard-slide {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  width: 100%;
 }
 
-// 슬라이드 인디케이터 점
-.image-card-indicator {
-  // 예: width: 8px; height: 8px;
+.imgcard-slide-inner {
+  position: relative;
+  height: $card-hero-height;
+}
+
+.imgcard-slide-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// 그라데이션 오버레이
+.imgcard-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    var(--card-overlay-from) 0%,
+    var(--card-overlay-mid) 40%,
+    transparent 100%
+  );
+}
+
+// 오버레이 텍스트 (이름, 직함 등)
+.imgcard-hero-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-xxl;
+  z-index: 10;
+}
+
+.imgcard-hero-name {
+  font-size: $font-size-3xl;
+  font-weight: 700;
+  color: var(--color-white);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  margin: 0;
+}
+
+.imgcard-hero-name-en {
+  color: rgba(255,255,255,0.8);
+  font-size: $font-size-sm;
+  margin-top: $spacing-xs;
+}
+
+.imgcard-hero-title {
+  color: rgba(255,255,255,0.9);
+  margin-top: $spacing-xs;
+}
+
+.imgcard-hero-title-en {
+  color: rgba(255,255,255,0.7);
+  font-size: $font-size-sm;
+  margin-top: 2px;
+}
+
+// 슬라이드 인디케이터
+.imgcard-indicators {
+  position: absolute;
+  bottom: $spacing-sm;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+
+.imgcard-dot {
+  width: $card-indicator-size;
+  height: $card-indicator-size;
+  border-radius: $radius-full;
+  background: var(--card-indicator-bg);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &.is-active {
+    background: var(--card-indicator-active-bg);
+    width: $card-indicator-active-width;
+  }
+}
+
+// 좌우 화살표
+.imgcard-arrows {
+  position: absolute;
+  bottom: $spacing-lg;
+  right: $spacing-lg;
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+
+.imgcard-arrow {
+  width: $card-arrow-size;
+  height: $card-arrow-size;
+  border-radius: $radius-full;
+  background: var(--card-arrow-bg);
+  backdrop-filter: blur(4px);
+  color: var(--color-white);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+
+  &:hover {
+    background: var(--card-arrow-bg-hover);
+  }
+}
+
+// 이미지 없을 때 폴백
+.imgcard-fallback {
+  height: $card-hero-fallback-height;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.imgcard-fallback-initial {
+  color: var(--color-white);
+  font-size: 3.75rem;
+  font-weight: 700;
+}
+
+// 하단 정보 영역
+.imgcard-info {
+  padding: $spacing-xxl;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+}
+
+// 이미지형 소개글
+.imgcard-bio {
+  color: var(--card-color-bio);
+  font-size: $font-size-sm;
+  line-height: 1.6;
 }

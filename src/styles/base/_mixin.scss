@@ -1,0 +1,9 @@
+@use './variables' as *;
+
+.color-primary {
+  color: var(--color-primary);
+}
+.bg-color-primary {
+  background-color:var(--color-primary);
+  color:#fff;
+}
